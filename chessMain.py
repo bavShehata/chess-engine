@@ -2,7 +2,7 @@
 This is our main driver file. It ill be responsible for handling user input and displaying the current Game State object.
 '''
 import pygame as p
-import chessEngine
+import chess_engine
 
 WIDTH = HEIGHT = 512
 DIMENSION = 8 # A chess board is 8x8
@@ -28,14 +28,32 @@ def main():
     screen = p.display.set_mode((WIDTH, HEIGHT))
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
-    gs = chessEngine.GameState()
+    gs = chess_engine.GameState()
     load_images()
-    draw_game_state(screen, gs)
     running = True
+    sqSelected = () # No square is slected intially (row, col)
+    playerClicks = [] # Keep track of player clicks [(6,4), (4,4)]
     while running:
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
+            elif e.type == p.MOUSEBUTTONDOWN:
+                location = p.mouse.get_pos() # (x,y) location of mouse
+                col = location[0]//SQ_SIZE
+                row = location[1]//SQ_SIZE
+                if sqSelected == (row, col): # The user clicked the same square twice
+                    sqSelected = () # Deselect
+                    playerClicks = []
+                else:
+                    sqSelected = (row, col)
+                    playerClicks.append(sqSelected) # Append both the 1st and 2nd clicks
+                if len(playerClicks) == 2: # After 2nd click
+                    move = chess_engine.Move(playerClicks[0], playerClicks[1], gs.board)
+                    print(move.get_chess_notation())
+                    gs.make_move(move)
+                    sqSelected = ()
+                    playerClicks = []
+        draw_game_state(screen, gs)
         clock.tick(MAX_FPS)
         p.display.flip()
     
