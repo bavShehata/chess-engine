@@ -29,6 +29,8 @@ def main():
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     gs = chess_engine.GameState()
+    valid_moves = gs.get_valid_moves()
+    move_made = False        # Flag variable when a move is made, to prevent regenerating the function pointlessly
     load_images()
     running = True
     sqSelected = () # No square is slected intially (row, col)
@@ -50,9 +52,18 @@ def main():
                 if len(playerClicks) == 2: # After 2nd click
                     move = chess_engine.Move(playerClicks[0], playerClicks[1], gs.board)
                     print(move.get_chess_notation())
-                    gs.make_move(move)
+                    if move in valid_moves:
+                        gs.make_move(move)
+                        move_made = True
                     sqSelected = ()
                     playerClicks = []
+            elif e.type == p.KEYDOWN:
+                if e.key == p.K_u:
+                    gs.undo_move()
+                    move_made = True
+        if move_made:
+            valid_moves = gs.get_valid_moves()
+            move_made = False
         draw_game_state(screen, gs)
         clock.tick(MAX_FPS)
         p.display.flip()
