@@ -19,6 +19,9 @@ class GameState():
             ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"],
         ]
+        self.move_functions = {'P': self.get_pawn_moves, 'R': self.get_rook_moves, \
+            'N': self.get_knight_moves, 'B': self.get_bishop_moves, 'Q': self.get_queen_moves, \
+            'K': self.get_king_moves, }
         self.white_to_move = True
         self.move_log = []
         
@@ -59,10 +62,7 @@ class GameState():
                 turn = self.board[r][c][0]
                 if(turn == 'w' and self.white_to_move) or (turn == 'b' and not self.white_to_move):
                     piece = self.board[r][c][1]
-                    if piece == 'P':
-                        self.get_pawn_moves(r, c, moves)
-                    if piece == 'R':
-                        self.get_rock_moves(r, c, moves)
+                    self.move_functions[piece](r, c, moves)
         return moves
 
     def get_pawn_moves(self, r, c, moves):       
@@ -70,14 +70,59 @@ class GameState():
         Get all possible moves for the pawn located at (r, w) and add them the list of all 
         possible moves
         """
-        pass
-    def get_rock_moves(self, r, c, moves):       
+        if self.white_to_move: # White pawn moves
+            if self.board[r-1][c] == "--": # 1 square pawn advance
+                moves.append(Move((r,c), (r-1, c), self.board))
+                if r == 6 and self.board[r-2][c] == "--": # 2 square pawn advance
+                    moves.append(Move((r,c), (r-2, c), self.board))
+            if c-1 >= 0: # Captures to the left
+                if self.board[r-1][c-1][0] == 'b': 
+                    moves.append(Move((r,c), (r-1, c-1), self.board))
+            if c+1 <= 7: # Captures to the left
+                if self.board[r-1][c+1][0] == 'b':
+                  moves.append(Move((r,c), (r-1, c+1), self.board))
+                  
+                  
+        if not self.white_to_move: # Black pawn moves
+            if self.board[r+1][c] == "--": # 1 square pawn advance
+                moves.append(Move((r,c), (r+1, c), self.board))
+                if r == 1 and self.board[r+2][c] == "--": # 2 square pawn advance
+                    moves.append(Move((r,c), (r+2, c), self.board))
+            if c-1 >= 0: # Captures to the left
+                if self.board[r+1][c-1][0] == 'w': 
+                    moves.append(Move((r,c), (r+1, c-1), self.board))
+            if c+1 <= 7: # Captures to the left
+                if self.board[r+1][c+1][0] == 'w':
+                  moves.append(Move((r,c), (r+1, c+1), self.board))
+                  
+    def get_rook_moves(self, r, c, moves):       
         """
         Get all possible moves for the rock located at (r, w) and add them the list of all 
         possible moves
         """
         pass
-
+    def get_knight_moves(self, r, c, moves):
+        """
+        Get all possible moves for the knight located at (r, w) and add them the list of all 
+        possible moves
+        """
+        pass
+    def get_bishop_moves(self, r, c, moves):
+        """
+        Get all possible moves for the bishop located at (r, w) and add them the list of all 
+        possible moves
+        """
+    def get_queen_moves(self, r, c, moves):
+        """
+        Get all possible moves for the queen located at (r, w) and add them the list of all 
+        possible moves
+        """
+    def get_king_moves(self, r, c, moves):
+        """
+        Get all possible moves for the king located at (r, w) and add them the list of all 
+        possible moves
+        """
+        
 class Move():
     # maps keys to values for chess notation
     ranks_to_rows = {"8": 0, "7": 1, "6": 2, "5": 3,
@@ -96,7 +141,7 @@ class Move():
         # Unique Id for each move
         self.move_id = self.start_row * 1000 + \
             self.start_col * 100 + self.end_row * 10 + self.end_col
-        print(self.move_id)
+
     def __eq__(self, other):
         """
         Overriding the equals method
