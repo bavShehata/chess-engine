@@ -24,7 +24,7 @@ class GameState():
             'K': self.get_king_moves, }
         self.white_to_move = True
         self.move_log = []
-        
+
     def make_move(self, move):
         """
         Takes a move as a parameter and executes it (It won't work on castling and enpassant, 
@@ -65,9 +65,10 @@ class GameState():
                     self.move_functions[piece](r, c, moves)
         return moves
 
+    # pylint: disable=locally-disabled, invalid-name
     def get_pawn_moves(self, r, c, moves):       
         """
-        Get all possible moves for the pawn located at (r, w) and add them the list of all 
+        Get all possible moves for the pawn located at (r, w) and add them the list of all
         possible moves
         """
         if self.white_to_move: # White pawn moves
@@ -80,49 +81,180 @@ class GameState():
                     moves.append(Move((r,c), (r-1, c-1), self.board))
             if c+1 <= 7: # Captures to the left
                 if self.board[r-1][c+1][0] == 'b':
-                  moves.append(Move((r,c), (r-1, c+1), self.board))
-                  
-                  
+                    moves.append(Move((r,c), (r-1, c+1), self.board))
+
+
         if not self.white_to_move: # Black pawn moves
             if self.board[r+1][c] == "--": # 1 square pawn advance
                 moves.append(Move((r,c), (r+1, c), self.board))
                 if r == 1 and self.board[r+2][c] == "--": # 2 square pawn advance
                     moves.append(Move((r,c), (r+2, c), self.board))
             if c-1 >= 0: # Captures to the left
-                if self.board[r+1][c-1][0] == 'w': 
+                if self.board[r+1][c-1][0] == 'w':
                     moves.append(Move((r,c), (r+1, c-1), self.board))
             if c+1 <= 7: # Captures to the left
                 if self.board[r+1][c+1][0] == 'w':
                   moves.append(Move((r,c), (r+1, c+1), self.board))
-                  
-    def get_rook_moves(self, r, c, moves):       
+    # pylint: disable=locally-disabled, invalid-name
+    def get_rook_moves(self, r, c, moves):
         """
-        Get all possible moves for the rock located at (r, w) and add them the list of all 
+        Get all possible moves for the rock located at (r, w) and add them the list of all
         possible moves
         """
-        pass
+        top = right = down = left = True
+        for i in range(1, 7):
+            if top and r - i >= 0:      # There were no obstacles top or end of the board
+                if self.board[r-i][c] == '--':
+                    moves.append(Move((r,c), (r-i,c), self.board))
+                elif self.board[r-i][c][0] != self.board[r][c][0]:      # If it's an enemy piece
+                    # Capture it and don't look for movre moves
+                    moves.append(Move((r,c), (r-i,c), self.board))
+                    top = False
+                else:
+                    top = False
+            if right and c + i <= 7:
+                if self.board[r][c+i] == '--':
+                    moves.append(Move((r,c), (r,c+i), self.board))
+                elif self.board[r][c+i][0] != self.board[r][c][0]:      # If it's an enemy piece
+                    moves.append(Move((r,c), (r,c+i), self.board))
+                    right = False
+                else:
+                    right = False
+            if down and r + i <= 7:
+                if self.board[r+i][c] == '--':
+                    moves.append(Move((r,c), (r+i,c), self.board))
+                elif self.board[r+i][c][0] != self.board[r][c][0]:      # If it's an enemy piece
+                    # Capture it and don't look for movre moves
+                    moves.append(Move((r,c), (r+i,c), self.board)) 
+                    down = False
+                else:
+                    down = False
+            if left and c - i >= 0:
+                if self.board[r][c-i] == '--':
+                    moves.append(Move((r,c), (r,c-i), self.board))
+                elif self.board[r][c-i][0] != self.board[r][c][0]:      # If it's an enemy piece
+                    moves.append(Move((r,c), (r,c-i), self.board))
+                    left = False
+                else:
+                    left = False
+                    
     def get_knight_moves(self, r, c, moves):
         """
-        Get all possible moves for the knight located at (r, w) and add them the list of all 
+        Get all possible moves for the knight located at (r, w) and add them the list of all
         possible moves
         """
-        pass
+        if r - 2 >= 0 and c + 1 <= 7:      # There were no obstacles top or end of the board
+            if self.board[r-2][c+1][0] != self.board[r][c][0]:      # If it's an enemy piece pr empty
+                # Capture it and don't look for movre moves
+                moves.append(Move((r,c), (r-2,c+1), self.board))
+        if c + 2 <= 7 and r - 1 >= 0:
+            if self.board[r-1][c+2][0] != self.board[r][c][0]:      # If it's an enemy piece pr empty
+                moves.append(Move((r,c), (r-1,c+2), self.board))
+        if c + 2 <= 7 and r + 1 <= 7:
+            if self.board[r+1][c+2][0] != self.board[r][c][0]:      # If it's an enemy piece pr empty
+                # Capture it and don't look for movre moves
+                moves.append(Move((r,c), (r+1,c+2), self.board)) 
+        if  c + 1 <= 7 and r + 2 <= 7:
+            if self.board[r+2][c+1][0] != self.board[r][c][0]:      # If it's an enemy piece pr empty
+                moves.append(Move((r,c), (r+2,c+1), self.board))
+        if r + 2 <= 7 and c - 1 >= 0:      # There were no obstacles top or end of the board
+            if self.board[r+2][c-1][0] != self.board[r][c][0]:      # If it's an enemy piece
+                # Capture it and don't look for movre moves
+                moves.append(Move((r,c), (r+2,c-1), self.board))
+        if c - 2 >= 0 and r + 1 <= 7:
+            if self.board[r+1][c-2][0] != self.board[r][c][0]:      # If it's an enemy piece
+                moves.append(Move((r,c), (r+1,c-2), self.board))
+        if r - 1 >= 0 and c - 2 >= 0:
+            if self.board[r-1][c-2][0] != self.board[r][c][0]:      # If it's an enemy piece
+                # Capture it and don't look for movre moves
+                moves.append(Move((r,c), (r-1,c-2), self.board)) 
+        if c - 1 >= 0 and r - 2 >= 0:
+            if self.board[r-2][c-1][0] != self.board[r][c][0]:      # If it's an enemy piece
+                moves.append(Move((r,c), (r-2,c-1), self.board))
     def get_bishop_moves(self, r, c, moves):
         """
-        Get all possible moves for the bishop located at (r, w) and add them the list of all 
+        Get all possible moves for the bishop located at (r, w) and add them the list of all
         possible moves
         """
+        top_right = down_right = down_left = top_left = True
+        for i in range(1, 7):
+            if top_right and r - i >= 0 and c + i <= 7:      # There were no obstacles top or end of the board
+                if self.board[r-i][c+i] == '--':
+                    moves.append(Move((r,c), (r-i,c+i), self.board))
+                elif self.board[r-i][c+i][0] != self.board[r][c][0]:      # If it's an enemy piece
+                    # Capture it and don't look for movre moves
+                    moves.append(Move((r,c), (r-i,c+i), self.board))
+                    top_right = False
+                else:
+                    top_right = False
+            if down_right and c + i <= 7 and r + i <= 7:
+                if self.board[r+i][c+i] == '--':
+                    moves.append(Move((r,c), (r+i,c+i), self.board))
+                elif self.board[r+i][c+i][0] != self.board[r][c][0]:      # If it's an enemy piece
+                    moves.append(Move((r,c), (r+i,c+i), self.board))
+                    down_right = False
+                else:
+                    down_right = False
+            if down_left and r + i <= 7 and c - i >= 0:
+                if self.board[r+i][c-i] == '--':
+                    moves.append(Move((r,c), (r+i,c-i), self.board))
+                elif self.board[r+i][c-i][0] != self.board[r][c][0]:      # If it's an enemy piece
+                    # Capture it and don't look for movre moves
+                    moves.append(Move((r,c), (r+i,c-i), self.board)) 
+                    down_left = False
+                else:
+                    down_left = False
+            if top_left and c - i >= 0 and r - i >= 0:
+                if self.board[r-i][c-i] == '--':
+                    moves.append(Move((r,c), (r-i,c-i), self.board))
+                elif self.board[r-i][c-i][0] != self.board[r][c][0]:      # If it's an enemy piece
+                    moves.append(Move((r,c), (r-i,c-i), self.board))
+                    top_left = False
+                else:
+                    top_left = False
+                    
     def get_queen_moves(self, r, c, moves):
         """
-        Get all possible moves for the queen located at (r, w) and add them the list of all 
+        Get all possible moves for the queen located at (r, w) and add them the list of all
         possible moves
         """
+        self.get_rook_moves(r, c, moves)
+        self.get_bishop_moves(r, c, moves)
     def get_king_moves(self, r, c, moves):
         """
-        Get all possible moves for the king located at (r, w) and add them the list of all 
+        Get all possible moves for the king located at (r, w) and add them the list of all
         possible moves
         """
-        
+        i = 1
+        if r - i >= 0:      # There were no obstacles top or end of the board
+            if self.board[r-i][c][0] != self.board[r][c][0]:      # If it's an enemy piece pr empty
+                # Capture it and don't look for movre moves
+                moves.append(Move((r,c), (r-i,c), self.board))
+        if c + i <= 7:
+            if self.board[r][c+i][0] != self.board[r][c][0]:      # If it's an enemy piece pr empty
+                moves.append(Move((r,c), (r,c+i), self.board))
+        if r + i <= 7:
+            if self.board[r+i][c][0] != self.board[r][c][0]:      # If it's an enemy piece pr empty
+                # Capture it and don't look for movre moves
+                moves.append(Move((r,c), (r+i,c), self.board)) 
+        if  c - i >= 0:
+            if self.board[r][c-i][0] != self.board[r][c][0]:      # If it's an enemy piece pr empty
+                moves.append(Move((r,c), (r,c-i), self.board))
+        if r - i >= 0 and c + i <= 7:      # There were no obstacles top or end of the board
+            if self.board[r-i][c+i][0] != self.board[r][c][0]:      # If it's an enemy piece
+                # Capture it and don't look for movre moves
+                moves.append(Move((r,c), (r-i,c+i), self.board))
+        if c + i <= 7 and r + i <= 7:
+            if self.board[r+i][c+i][0] != self.board[r][c][0]:      # If it's an enemy piece
+                moves.append(Move((r,c), (r+i,c+i), self.board))
+        if r + i <= 7 and c - i >= 0:
+            if self.board[r+i][c-i][0] != self.board[r][c][0]:      # If it's an enemy piece
+                # Capture it and don't look for movre moves
+                moves.append(Move((r,c), (r+i,c-i), self.board)) 
+        if c - i >= 0 and r - i >= 0:
+            if self.board[r-i][c-i][0] != self.board[r][c][0]:      # If it's an enemy piece
+                moves.append(Move((r,c), (r-i,c-i), self.board))
+
 class Move():
     # maps keys to values for chess notation
     ranks_to_rows = {"8": 0, "7": 1, "6": 2, "5": 3,
