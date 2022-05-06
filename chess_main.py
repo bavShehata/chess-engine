@@ -43,6 +43,8 @@ def main():
                 location = p.mouse.get_pos() # (x,y) location of mouse
                 col = location[0]//SQ_SIZE
                 row = location[1]//SQ_SIZE
+                if gs.board[row][col] == '--' and len(playerClicks) == 0:
+                    continue
                 if sqSelected == (row, col): # The user clicked the same square twice
                     sqSelected = () # Deselect
                     playerClicks = []
@@ -55,8 +57,10 @@ def main():
                     if move in valid_moves:
                         gs.make_move(move)
                         move_made = True
-                    sqSelected = ()
-                    playerClicks = []
+                        sqSelected = ()
+                        playerClicks = []
+                    else:
+                        playerClicks = [sqSelected] # Enables resetting a click when a user clicks on two same-color pieces
             elif e.type == p.KEYDOWN:
                 if e.key == p.K_u:
                     gs.undo_move()
