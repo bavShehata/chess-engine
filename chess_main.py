@@ -84,7 +84,7 @@ def main():
                     
         # AI agent
         if not game_over and not human_turn:
-            ai_move = ai.find_best_move_minimax(gs, valid_moves)
+            ai_move = ai.find_best_move(gs, valid_moves, 2)
             if ai_move is None:
                 ai_move = ai.find_random_move(valid_moves) # Should never need to call this
             gs.make_move(ai_move)

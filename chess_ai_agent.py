@@ -1,4 +1,4 @@
-from lzma import CHECK_ID_MAX
+import sys
 import random
 
 # Scoring each piece
@@ -74,14 +74,21 @@ def find_minimax_move_iteratively(gs, valid_moves):
     return best_player_move
 
 
-def find_best_move_minimax(gs, valid_moves):
+def find_best_move(gs, valid_moves, type):
     """
     A helper function for the first recursive call of find_minimax_move_recursively() function 
     that will return the global variable next_move
     """
-    global next_move
+    global next_move, counter
+    counter = 0
     next_move = None
-    find_minimax_move_recursively(gs, valid_moves, DEPTH, gs.white_to_move)
+    if type == 0:
+        find_minimax_move_recursively(gs, valid_moves, DEPTH, gs.white_to_move)
+    elif type == 1:
+        find_negamax_move(gs, valid_moves, DEPTH, 1 if gs.white_to_move else -1)
+    elif type == 2:
+        find_negamax_move_alphabeta(gs, valid_moves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.white_to_move else -1)
+    print("\nWAITING FOR NEXT MOVE")
     return next_move
 
 def find_minimax_move_recursively(gs, valid_moves, depth, white_to_move):
@@ -92,7 +99,7 @@ def find_minimax_move_recursively(gs, valid_moves, depth, white_to_move):
     global next_move
     if depth == 0:
         return score_board(gs)
-    
+    #random.shuffle(valid_moves)     # Prevents the agent from being predictable when multiple moves have same score
     if white_to_move:
         max_score = -CHECKMATE
         for move in valid_moves:
@@ -100,9 +107,11 @@ def find_minimax_move_recursively(gs, valid_moves, depth, white_to_move):
             next_moves = gs.get_valid_moves()
             score = find_minimax_move_recursively(gs, next_moves, depth - 1, False)
             if score > max_score:
+                print("Best move so far for white is", move, "With a score of", score, "instead of", max_score)
                 max_score = score
                 if depth == DEPTH:
                     next_move = move
+                    print("\nWaiting for next move, white played last")
             gs.undo_move()
         return max_score
     else:
@@ -112,12 +121,65 @@ def find_minimax_move_recursively(gs, valid_moves, depth, white_to_move):
             next_moves = gs.get_valid_moves()
             score = find_minimax_move_recursively(gs, next_moves, depth - 1, True)
             if score < min_score:
+                print("Best move so far for black is", move, "With a score of", score, "instead of", min_score)
                 min_score = score
                 if depth == DEPTH:
                     next_move = move
+                    print("\nWaiting for next move, black played last")
             gs.undo_move()
         return min_score
-            
+
+def find_negamax_move(gs, valid_moves, depth, turn_multiplier):
+    """
+    This function uses negamax algorithm recursively to return the best move by looking multiple moves ahead. 
+    This is a variant of minimax used in zero-sum games for cleaner code
+    """
+    global next_move, counter
+    counter += 1
+    #random.shuffle(valid_moves)     # Prevents the agent from being predictable when multiple moves have same score
+    if depth == 0:
+        return turn_multiplier * score_board(gs)
+    max_score = -CHECKMATE
+    for move in valid_moves:
+        gs.make_move(move)
+        next_moves = gs.get_valid_moves()
+        # Negating the return value for negamax
+        score = -find_negamax_move(gs, next_moves, depth - 1, -turn_multiplier)
+        if score > max_score:
+            max_score = score
+            if depth == DEPTH:
+                next_move = move
+        gs.undo_move()
+    return max_score
+
+def find_negamax_move_alphabeta(gs, valid_moves, depth, alpha, beta, turn_multiplier):
+    """
+    This function uses negamax algorithm along with alphabeta pruning recursively to return the best move by looking multiple moves ahead. 
+    This is a variant of minimax used in zero-sum games for cleaner and faster code
+    """
+    global next_move, counter
+    counter += 1
+    #random.shuffle(valid_moves)     # Prevents the agent from being predictable when multiple moves have same score
+    if depth == 0:
+        return turn_multiplier * score_board(gs)
+    
+    # Move ordering - implement later
+    max_score = -CHECKMATE
+    for move in valid_moves:
+        gs.make_move(move)
+        next_moves = gs.get_valid_moves()
+        # Negating the return value for negamax
+        score = -find_negamax_move_alphabeta(gs, next_moves, depth - 1, -beta, -alpha, -turn_multiplier)
+        if score > max_score:
+            max_score = score
+            if depth == DEPTH:
+                next_move = move
+        gs.undo_move()
+        if max_score > alpha:   # Pruning happens
+            alpha = max_score
+        if alpha >= beta:
+            break
+    return max_score
 def score_board(gs):
     """
     Score the board based on material AND other rules.

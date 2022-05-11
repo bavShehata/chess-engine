@@ -503,6 +503,8 @@ class Move():
         if isinstance(other, Move):
             return self.move_id == other.move_id
         return False
+    def __repr__(self):
+        return (self.cols_to_files[self.start_col] + self.rows_to_ranks[self.start_row] + self.cols_to_files[self.end_col] + self.rows_to_ranks[self.end_row])
     def get_chess_notation(self):
         return self.get_rank_file(self.start_row, self.start_col) + self.get_rank_file(self.end_row, self.end_col)
 
