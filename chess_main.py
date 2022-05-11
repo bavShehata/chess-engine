@@ -3,6 +3,7 @@ This is our main driver file. It ill be responsible for handling user input and 
 '''
 import pygame as p
 import chess_engine
+import chess_ai_agent as ai
 
 WIDTH = HEIGHT = 512
 DIMENSION = 8 # A chess board is 8x8
@@ -17,9 +18,7 @@ def load_images():
     pieces = ["wP", "wR", "wN", "wB", "wQ", "wK", "bP", "bR", "bN", "bB", "bQ", "bK"]
     for piece in pieces:
         IMAGES[piece] = p.transform.scale(p.image.load(f"images/{piece}.png"), (SQ_SIZE, SQ_SIZE))
-    #NOTE: we can access each image  by 'Images['wP]' for example
-    print(IMAGES)
-    
+    #NOTE: we can access each image  by 'Images['wP]' for example    
 '''
 The main driver, handling user input, and updating graphics
 '''
@@ -37,12 +36,15 @@ def main():
     sqSelected = () # No square is slected intially (row, col)
     playerClicks = [] # Keep track of player clicks [(6,4), (4,4)]
     game_over = False
+    player_one = False # If a human is playing white, then this will be true.
+    player_two = False # If a human is playing black , then this will be true.
     while running:
+        human_turn = (gs.white_to_move and player_one) or (not gs.white_to_move and player_two)
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
             elif e.type == p.MOUSEBUTTONDOWN:
-                if not game_over:
+                if not game_over and human_turn:
                     location = p.mouse.get_pos() # (x,y) location of mouse
                     col = location[0]//SQ_SIZE
                     row = location[1]//SQ_SIZE
@@ -56,7 +58,6 @@ def main():
                         playerClicks.append(sqSelected) # Append both the 1st and 2nd clicks
                     if len(playerClicks) == 2: # After 2nd click
                         move = chess_engine.Move(playerClicks[0], playerClicks[1], gs.board)
-                        print(move.get_chess_notation())
                         for i in range(len(valid_moves)):
                             if move == valid_moves[i]:
                                 gs.make_move(valid_moves[i])
@@ -78,6 +79,14 @@ def main():
                     playerClicks = []
                     move_made = False
                     animate = False
+                    
+        # AI agent
+        if not game_over and not human_turn:
+            ai_move = ai.find_random_move(valid_moves)
+            gs.make_move(ai_move)
+            move_made = True
+            animate = True
+            
         if move_made:
             if animate:
                 animate_move(gs.move_log[-1], screen, gs.board, clock)

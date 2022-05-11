@@ -164,6 +164,7 @@ class GameState():
                 self.current_castling_right.bqs)    # Copy the current castling rights
         # 1- Generate all the moves
         moves = self.get_possible_moves()
+
         if self.white_to_move:
             self.get_castle_moves(self.white_king_location[0], self.white_king_location[1], moves)
         else:
@@ -431,9 +432,9 @@ class GameState():
         """
         if self.square_under_attack(r, c):
             return #        Can't castle in check
-        elif self.white_to_move and self.current_castling_right.wks or (not self.white_to_move ) and self.current_castling_right.bks:
+        if self.white_to_move and self.current_castling_right.wks or (not self.white_to_move ) and self.current_castling_right.bks:
             self.get_king_side_castle_moves(r, c, moves)
-        elif self.white_to_move and self.current_castling_right.wqs or (not self.white_to_move ) and self.current_castling_right.bqs:
+        if self.white_to_move and self.current_castling_right.wqs or (not self.white_to_move ) and self.current_castling_right.bqs:
             self.get_queen_side_castle_moves(r, c, moves)
 
 
