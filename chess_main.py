@@ -72,6 +72,7 @@ def main():
                     gs.undo_move()
                     move_made = True
                     animate = False
+                    game_over = False
                 elif e.key == p.K_r:        # Reset the board
                     gs = chess_engine.GameState()
                     valid_moves = gs.get_valid_moves()
@@ -79,10 +80,11 @@ def main():
                     playerClicks = []
                     move_made = False
                     animate = False
+                    game_over = False
                     
         # AI agent
         if not game_over and not human_turn:
-            ai_move = ai.find_greedy_move(gs, valid_moves)
+            ai_move = ai.find_best_move_minimax(gs, valid_moves)
             if ai_move is None:
                 ai_move = ai.find_random_move(valid_moves) # Should never need to call this
             gs.make_move(ai_move)

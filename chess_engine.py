@@ -114,7 +114,7 @@ class GameState():
                 else:       # Queen's side castle
                     self.board[move.end_row][move.end_col-2] = self.board[move.end_row][move.end_col+1] # Move the rook back to its position
                     self.board[move.end_row][move.end_col+1] = '--' # Empties the rook's square
-                   
+            self.check_mate = self.stale_mate = False
     def update_castle_rights(self, move):
         """
         Update castling rights based on king and rook moves
