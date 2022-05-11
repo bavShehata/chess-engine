@@ -54,12 +54,13 @@ def main():
                 if len(playerClicks) == 2: # After 2nd click
                     move = chess_engine.Move(playerClicks[0], playerClicks[1], gs.board)
                     print(move.get_chess_notation())
-                    if move in valid_moves:
-                        gs.make_move(move)
-                        move_made = True
-                        sqSelected = ()
-                        playerClicks = []
-                    else:
+                    for i in range(len(valid_moves)):
+                        if move == valid_moves[i]:
+                            gs.make_move(valid_moves[i])
+                            move_made = True
+                            sqSelected = ()
+                            playerClicks = []
+                    if not move_made:
                         playerClicks = [sqSelected] # Enables resetting a click when a user clicks on two same-color pieces
             elif e.type == p.KEYDOWN:
                 if e.key == p.K_u:
