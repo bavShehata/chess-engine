@@ -272,7 +272,7 @@ class GameState():
         possible moves
         """
         top = right = down = left = True
-        for i in range(1, 7):
+        for i in range(1, 8):
             if top and r - i >= 0:      # There were no obstacles top or end of the board
                 if self.board[r-i][c] == '--':
                     moves.append(Move((r,c), (r-i,c), self.board))
@@ -347,7 +347,7 @@ class GameState():
         possible moves
         """
         top_right = down_right = down_left = top_left = True
-        for i in range(1, 7):
+        for i in range(1, 8):
             if top_right and r - i >= 0 and c + i <= 7:      # There were no obstacles top or end of the board
                 if self.board[r-i][c+i] == '--':
                     moves.append(Move((r,c), (r-i,c+i), self.board))

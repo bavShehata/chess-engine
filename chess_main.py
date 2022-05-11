@@ -36,7 +36,7 @@ def main():
     sqSelected = () # No square is slected intially (row, col)
     playerClicks = [] # Keep track of player clicks [(6,4), (4,4)]
     game_over = False
-    player_one = False # If a human is playing white, then this will be true.
+    player_one = True # If a human is playing white, then this will be true.
     player_two = False # If a human is playing black , then this will be true.
     while running:
         human_turn = (gs.white_to_move and player_one) or (not gs.white_to_move and player_two)
@@ -82,7 +82,9 @@ def main():
                     
         # AI agent
         if not game_over and not human_turn:
-            ai_move = ai.find_random_move(valid_moves)
+            ai_move = ai.find_greedy_move(gs, valid_moves)
+            if ai_move is None:
+                ai_move = ai.find_random_move(valid_moves) # Should never need to call this
             gs.make_move(ai_move)
             move_made = True
             animate = True
