@@ -505,6 +505,8 @@ class Move():
             self.piece_captured = 'wP' if self.piece_moved == 'bP' else 'bP'
         # Castle move
         self.is_castle_move = is_castle_move
+        # Capture move
+        self.is_capture_move = self.piece_captured != "--"
         # Unique Id for each move
         self.move_id = self.start_row * 1000 + \
             self.start_col * 100 + self.end_row * 10 + self.end_col
@@ -516,7 +518,10 @@ class Move():
         if isinstance(other, Move):
             return self.move_id == other.move_id
         return False
-    def __repr__(self):
+    def __str__(self):
+        """
+        Overriding the str function
+        """
         return (self.cols_to_files[self.start_col] + self.rows_to_ranks[self.start_row] + self.cols_to_files[self.end_col] + self.rows_to_ranks[self.end_row])
     def get_chess_notation(self):
         return self.get_rank_file(self.start_row, self.start_col) + self.get_rank_file(self.end_row, self.end_col)
