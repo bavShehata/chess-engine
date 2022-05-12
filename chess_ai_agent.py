@@ -1,4 +1,3 @@
-import sys
 import random
 
 # Scoring each piece
@@ -74,7 +73,7 @@ def find_minimax_move_iteratively(gs, valid_moves):
     return best_player_move
 
 
-def find_best_move(gs, valid_moves, type):
+def find_best_move(gs, valid_moves, algo_type):
     """
     A helper function for the first recursive call of find_minimax_move_recursively() function 
     that will return the global variable next_move
@@ -82,11 +81,11 @@ def find_best_move(gs, valid_moves, type):
     global next_move, counter
     counter = 0
     next_move = None
-    if type == 0:
+    if algo_type == 0:
         find_minimax_move_recursively(gs, valid_moves, DEPTH, gs.white_to_move)
-    elif type == 1:
+    elif algo_type == 1:
         find_negamax_move(gs, valid_moves, DEPTH, 1 if gs.white_to_move else -1)
-    elif type == 2:
+    elif algo_type == 2:
         find_negamax_move_alphabeta(gs, valid_moves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.white_to_move else -1)
     print("\nWAITING FOR NEXT MOVE")
     return next_move
@@ -159,7 +158,7 @@ def find_negamax_move_alphabeta(gs, valid_moves, depth, alpha, beta, turn_multip
     """
     global next_move, counter
     counter += 1
-    #random.shuffle(valid_moves)     # Prevents the agent from being predictable when multiple moves have same score
+    random.shuffle(valid_moves)     # Prevents the agent from being predictable when multiple moves have same score
     if depth == 0:
         return turn_multiplier * score_board(gs)
     

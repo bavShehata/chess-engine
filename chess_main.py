@@ -37,7 +37,7 @@ def main():
     playerClicks = [] # Keep track of player clicks [(6,4), (4,4)]
     game_over = False
     player_one = True # If a human is playing white, then this will be true.
-    player_two = False # If a human is playing black , then this will be true.
+    player_two = True # If a human is playing black , then this will be true.
     while running:
         human_turn = (gs.white_to_move and player_one) or (not gs.white_to_move and player_two)
         for e in p.event.get():
@@ -84,7 +84,7 @@ def main():
                     
         # AI agent
         if not game_over and not human_turn:
-            ai_move = ai.find_best_move(gs, valid_moves, 2)
+            ai_move = ai.find_best_move(gs, valid_moves, 2) # This last parameter decides which algorithm to use (minimax recursive, negamax, negamax+aplhabeta)
             if ai_move is None:
                 ai_move = ai.find_random_move(valid_moves) # Should never need to call this
             gs.make_move(ai_move)
@@ -179,6 +179,10 @@ def animate_move(move, screen, board, clock):
         p.draw.rect(screen, color, end_square)
         # Draw captured piece into rectangle
         if move.piece_captured != '--':
+            # Enpassant case
+            if move.is_enpassant_move:
+                enpassant_row = move.end_row + (1 if move.piece_captured[0] == 'b' else -1)
+                end_square = p.Rect(move.end_col*SQ_SIZE, enpassant_row*SQ_SIZE, SQ_SIZE, SQ_SIZE)
             screen.blit(IMAGES[move.piece_captured], end_square)
         # Draw moving piece
         screen.blit(IMAGES[move.piece_moved], p.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))

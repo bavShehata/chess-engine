@@ -10,6 +10,16 @@ class GameState():
         # Each piece consists of 2 characters, the first represents whether it's white or black,
         # while the second represents the type of the piece Empty spaces are marked as
         # "--" as it adds to the symmetry of the board
+        # self.board = [
+        #     ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
+        #     ["bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"],
+        #     ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"],
+        # ]
         self.board = [
             ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
             ["bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP"],
@@ -30,6 +40,7 @@ class GameState():
         self.check_mate = False
         self.stale_mate = False
         self.enpassant_possible = () # Coordinates for the possible enpassant
+        self.enpassant_log = [self.enpassant_possible]
         self.current_castling_right = CastleRights(True, True, True, True)
         self.castle_rights_log = [CastleRights(self.current_castling_right.wks, \
             self.current_castling_right.bks, self.current_castling_right.wqs, \
@@ -37,7 +48,7 @@ class GameState():
 
     def make_move(self, move):
         """
-        Takes a move as a parameter and executes it (It won't work on castling and enpassant, 
+        Takes a move as a parameter and executes it (It won't work on castling and enpassant,
         and promotion)
         """
         self.board[move.start_row][move.start_col] = "--"
@@ -72,6 +83,8 @@ class GameState():
                 self.board[move.end_row][move.end_col+1] = self.board[move.end_row][move.end_col-2] # Copies the rook into its new square
                 self.board[move.end_row][move.end_col-2] = '--' # Remove the rook from its position
             
+        # Update enpassant rights
+        self.enpassant_log.append(self.enpassant_possible)
         # Update Castling Rights - whenever a rook or a king moves
         self.update_castle_rights(move)
         self.castle_rights_log.append(CastleRights(self.current_castling_right.wks, \
@@ -98,10 +111,9 @@ class GameState():
             if move.is_enpassant_move:
                 self.board[move.end_row][move.end_col] = '--'
                 self.board[move.start_row][move.end_col] = move.piece_captured
-                self.enpassant_possible = (move.end_row, move.end_col)
-            # Undo a 2 square pawn advance
-            if move.piece_moved[1] == 'P' and abs(move.start_row - move.end_row) == 2:
-                self.enpassant_possible = ()
+            # Undo enpassant rights
+            self.enpassant_log.pop()
+            self.enpassant_possible = copy.deepcopy(self.enpassant_log[-1])
             # Undo castle rights
             self.castle_rights_log.pop()
             castle_rights = copy.deepcopy(self.castle_rights_log[-1])
@@ -115,6 +127,7 @@ class GameState():
                     self.board[move.end_row][move.end_col-2] = self.board[move.end_row][move.end_col+1] # Move the rook back to its position
                     self.board[move.end_row][move.end_col+1] = '--' # Empties the rook's square
             self.check_mate = self.stale_mate = False
+            
     def update_castle_rights(self, move):
         """
         Update castling rights based on king and rook moves
