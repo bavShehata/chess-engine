@@ -39,7 +39,7 @@ def main():
     sqSelected = () # No square is slected intially (row, col)
     playerClicks = [] # Keep track of player clicks [(6,4), (4,4)]
     game_over = False
-    player_one = True # If a human is playing white, then this will be true.
+    player_one = False # If a human is playing white, then this will be true.
     player_two = False # If a human is playing black , then this will be true.
     while running:
         human_turn = (gs.white_to_move and player_one) or (not gs.white_to_move and player_two)
@@ -221,7 +221,7 @@ def draw_move_log(screen, gs, font):
 def draw_endgame_text(screen, text):
     font = p.font.SysFont("Helvetica", 32, True, False)
     textObject = font.render(text, 0, p.Color('Black'))
-    textLocation = p.Rect(0,0, BOARD_WIDTH, BOARD_HEIGHT).move(BOARD_WIDTH/2 - textObject.get_width()/2, BOARD_HEIGHT/2 - textObject.get_BAORD_HEIGHT()/2)
+    textLocation = p.Rect(0,0, BOARD_WIDTH, BOARD_HEIGHT).move(BOARD_WIDTH/2 - textObject.get_width()/2, BOARD_HEIGHT/2 - textObject.get_height()/2)
     screen.blit(textObject, textLocation)
     textObject = font.render(text, 0, p.Color('Gray'))
     screen.blit(textObject, textLocation.move(2,2))

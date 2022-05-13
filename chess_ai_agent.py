@@ -2,6 +2,78 @@ import random
 
 # Scoring each piece
 piece_score = {'K':0, 'Q': 10, 'R': 5, 'B': 3, 'N': 3, 'P': 1} # King's values doesn't matter since no way to capture it,
+
+# Positional chess
+# A knight is worth more in the middle since it can have more moves
+knight_scores = [
+                 [1,1,1,1,1,1,1,1],
+                 [1,2,2,2,2,2,2,1],
+                 [1,2,3,3,3,3,2,1],
+                 [1,2,3,4,4,3,2,1],
+                 [1,2,3,4,4,3,2,1],
+                 [1,2,3,3,3,3,2,1],
+                 [1,2,2,2,2,2,2,1],
+                 [1,1,1,1,1,1,1,1]
+                ]
+
+# A bishop is worth more on diagonally longer parts of the board since it allows for more moves
+bishop_scores = [
+                 [4,3,2,1,1,2,3,4],
+                 [3,4,3,2,2,3,4,3],
+                 [2,3,4,3,3,4,3,2],
+                 [1,2,3,4,4,3,2,1],
+                 [1,2,3,4,4,3,2,1],
+                 [2,3,4,3,3,4,3,2],
+                 [3,4,3,2,2,3,4,3],
+                 [4,3,2,1,1,2,3,4]
+                ]
+# A queen is worth more in the middle since it can protect more pieces and move more
+queen_scores = [
+                 [1,1,1,3,1,1,1,1],
+                 [1,2,3,3,3,1,1,1],
+                 [1,4,3,3,3,4,2,1],
+                 [1,2,3,3,3,2,2,1],
+                 [1,2,3,3,3,2,2,1],
+                 [1,4,3,3,3,4,2,1],
+                 [1,2,3,3,3,1,1,1],
+                 [1,1,1,3,1,1,1,1]
+               ]
+
+# Rooks are worth more either in centers, or in the first and second ranks to target more pawns
+rook_scores = [
+                 [4,3,4,4,4,4,3,4],
+                 [4,4,4,4,4,4,4,4],
+                 [1,1,2,3,3,2,1,1],
+                 [1,2,3,4,4,3,2,1],
+                 [1,2,3,4,4,3,2,1],
+                 [1,1,2,3,3,2,1,1],
+                 [4,4,4,4,4,4,4,4],
+                 [4,3,4,4,4,4,3,4]
+               ]
+# The pawns of both colors are the same, but flipped. the center pawns are always
+# better further in the center, while all pawns should always advance so they can promote
+white_pawn_scores = [
+                     [10,10,10,10,10,10,10,10],
+                     [8,8,8,8,8,8,8,8],
+                     [5,6,6,7,7,6,6,5],
+                     [2,3,3,5,5,3,3,2],
+                     [1,2,3,4,4,3,2,1],
+                     [1,1,2,3,3,2,1,1],
+                     [1,1,1,0,0,1,1,1],
+                     [0,0,0,0,0,0,0,0],
+                    ]
+black_pawn_scores = [
+                     [0,0,0,0,0,0,0,0],
+                     [1,1,1,0,0,1,1,1],
+                     [1,1,2,3,3,2,1,1],
+                     [2,3,3,5,5,3,3,2],
+                     [5,6,6,7,7,6,6,5],
+                     [8,8,8,8,8,8,8,8],
+                     [10,10,10,10,10,10,10,10],
+                    ]
+
+piece_position_scores = {"N": knight_scores, "B": bishop_scores, "Q": queen_scores, \
+    "R": rook_scores, "bP": black_pawn_scores, "wP": white_pawn_scores}
 CHECKMATE = 1000        # Checkmate is the most important
 STALEMATE = 0       # Stalemate is better than a losing position
 DEPTH = 2
@@ -173,6 +245,7 @@ def find_negamax_move_alphabeta(gs, valid_moves, depth, alpha, beta, turn_multip
             max_score = score
             if depth == DEPTH:
                 next_move = move
+                print(move, score)
         gs.undo_move()
         if max_score > alpha:   # Pruning happens
             alpha = max_score
@@ -193,14 +266,27 @@ def score_board(gs):
         return STALEMATE
     
     score = 0
-    for row in gs.board:
-        for square in row:
+    # pylint: disable=locally-disabled, consider-using-enumerate
+    for row in range(len(gs.board)):
+        for col in range(len(gs.board[row])):
             # Since this is a zero-sum game, whatever points white gains, black loses, so white would
             # add to the score, while black will subtract
-            if square[0] == 'w':        # If it's a white piece
-                score += piece_score[square[1]]
-            elif square[0] == 'b':
-                score -= piece_score[square[1]]
+            square = gs.board[row][col]
+            if square != '--':
+                piece_position_score = 0
+                # Score it positionally with a factor of 0.3
+                if square[1] != "K": # No position table for the king
+                    # For pawns
+                    if square[1] == "P":
+                        piece_position_score = piece_position_scores[square][row][col]
+                    # For other pieces
+                    else:
+                        piece_position_score = piece_position_scores[square[1]][row][col]
+                        
+                if square[0] == 'w':        # If it's a white piece 
+                    score += piece_score[square[1]] + piece_position_score * 0.3
+                elif square[0] == 'b':
+                    score -= piece_score[square[1]] + piece_position_score * 0.3
     return score
 def score_material(board):
     """
