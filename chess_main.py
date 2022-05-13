@@ -4,6 +4,7 @@ This is our main driver file. It ill be responsible for handling user input and 
 import pygame as p
 import chess_engine
 import chess_ai_agent as ai
+from multiprocessing import Process, Queue # Better for computational heavy processes than the threads module
 
 BOARD_WIDTH = BOARD_HEIGHT = 512
 MOVE_LOG_PANEL_WIDTH = 320
@@ -39,15 +40,18 @@ def main():
     sqSelected = () # No square is slected intially (row, col)
     playerClicks = [] # Keep track of player clicks [(6,4), (4,4)]
     game_over = False
-    player_one = False # If a human is playing white, then this will be true.
+    player_one = True # If a human is playing white, then this will be true.
     player_two = False # If a human is playing black , then this will be true.
+    ai_thinking = False # AI is currently trying to come up with a move
+    move_finder_process = None 
+    move_undone = True
     while running:
         human_turn = (gs.white_to_move and player_one) or (not gs.white_to_move and player_two)
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
             elif e.type == p.MOUSEBUTTONDOWN:
-                if not game_over and human_turn:
+                if not game_over:
                     location = p.mouse.get_pos() # (x,y) location of mouse
                     col = location[0]//SQ_SIZE
                     row = location[1]//SQ_SIZE
@@ -57,7 +61,7 @@ def main():
                     else:
                         sqSelected = (row, col)
                         playerClicks.append(sqSelected) # Append both the 1st and 2nd clicks
-                    if len(playerClicks) == 2: # After 2nd click
+                    if len(playerClicks) == 2 and human_turn: # After 2nd click
                         move = chess_engine.Move(playerClicks[0], playerClicks[1], gs.board)
                         for i in range(len(valid_moves)):
                             if move == valid_moves[i]:
@@ -74,6 +78,10 @@ def main():
                     move_made = True
                     animate = False
                     game_over = False
+                    if ai_thinking:
+                        move_finder_process.terminate()
+                        ai_thinking = False
+                    move_undone = True
                 elif e.key == p.K_r:        # Reset the board
                     gs = chess_engine.GameState()
                     valid_moves = gs.get_valid_moves()
@@ -82,15 +90,28 @@ def main():
                     move_made = False
                     animate = False
                     game_over = False
-                    
+                    if ai_thinking:
+                        move_finder_process.terminate()
+                        ai_thinking = False
+                    move_undone = True
         # AI agent
-        if not game_over and not human_turn:
-            ai_move = ai.find_best_move(gs, valid_moves, 2) # This last parameter decides which algorithm to use (minimax recursive, negamax, negamax+aplhabeta)
-            if ai_move is None:
-                ai_move = ai.find_random_move(valid_moves) # Should never need to call this
-            gs.make_move(ai_move)
-            move_made = True
-            animate = True
+        if not game_over and not human_turn and move_undone: # If it's the AI turn
+            if not ai_thinking:
+                ai_thinking = True
+                print("Thinking...")
+                return_queue = Queue() # Used to pass data between threads
+                move_finder_process = Process(target=ai.find_best_move, args=(gs, valid_moves, 2, return_queue))
+                move_finder_process.start() # Call the function with the parameters in args, in a new thread
+                
+            if move_finder_process and not move_finder_process.is_alive():
+                print("Done thinking")
+                ai_move = return_queue.get()
+                if ai_move is None:
+                    ai_move = ai.find_random_move(valid_moves) # Should never need to call this
+                gs.make_move(ai_move)
+                move_made = True
+                animate = True
+                ai_thinking = False
             
         if move_made:
             if animate:

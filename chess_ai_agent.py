@@ -145,7 +145,7 @@ def find_minimax_move_iteratively(gs, valid_moves):
     return best_player_move
 
 
-def find_best_move(gs, valid_moves, algo_type):
+def find_best_move(gs, valid_moves, algo_type, return_queue):
     """
     A helper function for the first recursive call of find_minimax_move_recursively() function 
     that will return the global variable next_move
@@ -160,7 +160,7 @@ def find_best_move(gs, valid_moves, algo_type):
     elif algo_type == 2:
         find_negamax_move_alphabeta(gs, valid_moves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.white_to_move else -1)
     print("\nWAITING FOR NEXT MOVE")
-    return next_move
+    return_queue.put(next_move)
 
 def find_minimax_move_recursively(gs, valid_moves, depth, white_to_move):
     """
