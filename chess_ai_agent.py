@@ -170,7 +170,7 @@ def find_minimax_move_recursively(gs, valid_moves, depth, white_to_move):
     global next_move
     if depth == 0:
         return score_board(gs)
-    #random.shuffle(valid_moves)     # Prevents the agent from being predictable when multiple moves have same score
+    random.shuffle(valid_moves)     # Prevents the agent from being predictable when multiple moves have same score
     if white_to_move:
         max_score = -CHECKMATE
         for move in valid_moves:
@@ -204,7 +204,7 @@ def find_negamax_move(gs, valid_moves, depth, turn_multiplier):
     global negamax_ai_counter
     negamax_ai_counter += 1
     global next_move
-    #random.shuffle(valid_moves)     # Prevents the agent from being predictable when multiple moves have same score
+    random.shuffle(valid_moves)     # Prevents the agent from being predictable when multiple moves have same score
     if depth == 0:
         return turn_multiplier * score_board(gs)
     max_score = -CHECKMATE
