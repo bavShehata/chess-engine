@@ -44,8 +44,8 @@ def main():
     player_one = False # If a human is playing white, then this will be true.
     player_two = False # If a human is playing black , then this will be true.
     # 0: random, 1: greedy, 2: minimax iterative, 3: minimax recursive, 4: negamax, 5: negamax alphabeta
-    player_one_alg = 3
-    player_two_alg = 4
+    player_one_alg = 0
+    player_two_alg = 1
     ai_thinking = False # AI is currently trying to come up with a move
     move_finder_process = None 
     move_undone = True

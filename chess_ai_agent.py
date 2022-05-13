@@ -113,7 +113,7 @@ def find_greedy_move(gs, valid_moves):
         elif gs.stale_mate:
             score = STALEMATE
         else:
-            score = turn_multiplier * score_material(gs.board)
+            score = turn_multiplier * score_board(gs)
         if(score > max_score):
             max_score = score
             best_move = player_move
@@ -150,7 +150,7 @@ def find_minimax_move_iteratively(gs, valid_moves):
                 elif gs.stale_mate:
                     score = STALEMATE
                 else:
-                    score = -turn_multiplier * score_material(gs.board)
+                    score = -turn_multiplier * score_board(gs)
                 if(score > opponent_max_score):
                     opponent_max_score = score
                 gs.undo_move()
