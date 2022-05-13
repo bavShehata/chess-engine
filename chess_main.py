@@ -4,7 +4,7 @@ This is our main driver file. It ill be responsible for handling user input and 
 import pygame as p
 import chess_engine
 import chess_ai_agent as ai
-from multiprocessing import Process, Queue # Better for computational heavy processes than the threads module
+from multiprocessing import Queue
 
 BOARD_WIDTH = BOARD_HEIGHT = 512
 MOVE_LOG_PANEL_WIDTH = 320
@@ -27,6 +27,7 @@ The main driver, handling user input, and updating graphics
 '''
 def main():
     p.init()
+    p.display.set_caption('Chess')
     screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
@@ -40,8 +41,11 @@ def main():
     sqSelected = () # No square is slected intially (row, col)
     playerClicks = [] # Keep track of player clicks [(6,4), (4,4)]
     game_over = False
-    player_one = True # If a human is playing white, then this will be true.
+    player_one = False # If a human is playing white, then this will be true.
     player_two = False # If a human is playing black , then this will be true.
+    # 0: random, 1: greedy, 2: minimax iterative, 3: minimax recursive, 4: negamax, 5: negamax alphabeta
+    player_one_alg = 3
+    player_two_alg = 4
     ai_thinking = False # AI is currently trying to come up with a move
     move_finder_process = None 
     move_undone = True
@@ -98,21 +102,17 @@ def main():
         if not game_over and not human_turn and move_undone: # If it's the AI turn
             if not ai_thinking:
                 ai_thinking = True
-                print("Thinking...")
-                return_queue = Queue() # Used to pass data between threads
-                move_finder_process = Process(target=ai.find_best_move, args=(gs, valid_moves, 2, return_queue))
-                move_finder_process.start() # Call the function with the parameters in args, in a new thread
-                
-            if move_finder_process and not move_finder_process.is_alive():
-                print("Done thinking")
+                return_queue = Queue() # Used to pass data between threads                
+                ai.find_best_move(gs, valid_moves, (player_one_alg if gs.white_to_move else player_two_alg), return_queue)
                 ai_move = return_queue.get()
                 if ai_move is None:
                     ai_move = ai.find_random_move(valid_moves) # Should never need to call this
                 gs.make_move(ai_move)
                 move_made = True
                 animate = True
+                sqSelected = () # Deselect
+                playerClicks = []
                 ai_thinking = False
-            
         if move_made:
             if animate:
                 animate_move(gs.move_log[-1], screen, gs.board, clock)
@@ -175,18 +175,21 @@ def draw_board(screen):
             p.draw.rect(screen, color, square)
 
 
-''' Draw the pieces on the board using the current state '''    
 def draw_pieces(screen, board):
+    ''' 
+    Draw the pieces on the board using the current state 
+    '''    
     for r in range(DIMENSION):
         for c in range(DIMENSION):
             piece = board[r][c]
             if piece != "--":
                 screen.blit(IMAGES[piece], p.Rect(SQ_SIZE*c, SQ_SIZE*r, SQ_SIZE, SQ_SIZE))
 
-"""
-Animating the move
-"""
+
 def animate_move(move, screen, board, clock):
+    """
+    Animating the move
+    """
     global colors
     d_r = move.end_row - move.start_row
     d_c = move.end_col - move.start_col
